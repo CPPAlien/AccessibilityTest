@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">AccessibilityTest</string>
+    <string name="permission_denied">The App is denied to access the Accessibility, please turn on it.</string>
+    <string name="permission_granted">The App is Granted the Accessibility permission, thank you!</string>
 </resources>

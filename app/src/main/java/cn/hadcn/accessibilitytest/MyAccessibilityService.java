@@ -24,6 +24,11 @@ public class MyAccessibilityService extends AccessibilityService {
     static final public String ACCESSIBILITY_INFO = "cn.hadcn.accessibilitytest.ACCESSIBILITY_INFO";
     static final public String IS_GRANTED = "cn.hadcn.accessibilitytest.IS_GRANTED";
 
+    /**
+     * broadcast Accessibility permission status,
+     * ui component could get the status via receiver
+     * @param isGranted is the Accessibility permission granted to the app
+     */
     public void broadCastMsg(Boolean isGranted) {
         Intent intent = new Intent(ACCESSIBILITY_INFO);
         intent.putExtra(IS_GRANTED, isGranted);
@@ -35,6 +40,15 @@ public class MyAccessibilityService extends AccessibilityService {
         super.onServiceConnected();
         Log.e(TAG, "onServiceConnected");
         broadCastMsg(true);
+        startActivity(new Intent(this, CheckAccessibilityActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+    }
+
+    @Override
+    public boolean onUnbind(Intent intent) {
+        Log.e(TAG, "onUnbind");
+        broadCastMsg(false);
+        startActivity(new Intent(this, CheckAccessibilityActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+        return super.onUnbind(intent);
     }
 
     @Override
@@ -47,10 +61,5 @@ public class MyAccessibilityService extends AccessibilityService {
         Log.e(TAG, "onInterrupt");
     }
 
-    @Override
-    public boolean onUnbind(Intent intent) {
-        Log.e(TAG, "onUnbind");
-        broadCastMsg(false);
-        return super.onUnbind(intent);
-    }
+
 }

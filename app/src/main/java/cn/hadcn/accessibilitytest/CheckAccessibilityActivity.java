@@ -11,27 +11,38 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
-public class MainActivity extends AppCompatActivity {
+public class CheckAccessibilityActivity extends AppCompatActivity {
     final String TAG = "AccessibilityTest:";
     TextView tvGrantStatus;
+    Button btnSetting;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        LocalBroadcastManager.getInstance(this).registerReceiver((receiver),
-                new IntentFilter(MyAccessibilityService.ACCESSIBILITY_INFO)
-        );
-        findViewById(R.id.button_set).setOnClickListener(new View.OnClickListener() {
+        tvGrantStatus = (TextView)findViewById(R.id.grant_status);
+        btnSetting = (Button)findViewById(R.id.button_set);
+
+        btnSetting.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
                 startActivity(intent);
             }
         });
-        tvGrantStatus = (TextView)findViewById(R.id.grant_status);
+
+        if ( AccessibilityStatus.newInstance(this).get() ) {
+            showGranted();
+        } else {
+            showDenied();
+        }
+
+        LocalBroadcastManager.getInstance(this).registerReceiver((receiver),
+                new IntentFilter(MyAccessibilityService.ACCESSIBILITY_INFO)
+        );
     }
 
     private BroadcastReceiver receiver = new BroadcastReceiver() {
@@ -40,11 +51,9 @@ public class MainActivity extends AppCompatActivity {
             Log.e(TAG, "broadcast msg received");
             Boolean isGranted = intent.getBooleanExtra(MyAccessibilityService.IS_GRANTED, false);
             if ( isGranted ) {
-                tvGrantStatus.setText("Accessibility is working");
-                tvGrantStatus.setTextColor(Color.GREEN);
+                showGranted();
             } else {
-                tvGrantStatus.setText("Accessibility is denied");
-                tvGrantStatus.setTextColor(Color.RED);
+                showDenied();
             }
         }
     };
@@ -53,5 +62,19 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
+    }
+
+    private void showGranted() {
+        tvGrantStatus.setText(getString(R.string.permission_granted));
+        tvGrantStatus.setTextColor(Color.GREEN);
+        btnSetting.setVisibility(View.GONE);
+        AccessibilityStatus.newInstance(this).set(true);
+    }
+
+    private void showDenied(){
+        tvGrantStatus.setText(getString(R.string.permission_denied));
+        tvGrantStatus.setTextColor(Color.RED);
+        btnSetting.setVisibility(View.VISIBLE);
+        AccessibilityStatus.newInstance(this).set(false);
     }
 }
